@@ -43,6 +43,6 @@ jobs:
           IMAGE_TAG: ${{ steps.image.outputs.version }}
         run: |
             echo "Pushing image to ECR: $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG and latest"
-            docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG ./$ECR_REPOSITORY
+            docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPOSITORY:latest ./$ECR_REPOSITORY
             docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
             docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
