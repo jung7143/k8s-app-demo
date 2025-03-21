@@ -10,6 +10,8 @@ jobs:
     strategy:
       matrix:
         ecr_repository: [cats, web, dogs]  # 여러 개의 ECR 리포지토리 지정
+      outputs:
+        image_tag: ${{ steps.image.outputs.version }}
 
     steps:
       - name: Checkout source code
@@ -67,12 +69,12 @@ jobs:
 
       - name: Update Kubernetes resources
         run: |
-            echo ${{ steps.image-info.outputs.image_tag }}
+            echo ${{ needs.build.outputs.image_tag }}
             cd k8s-manifest-repo/base/
             kustomize edit set image \
-            058264243522.dkr.ecr.ap-northeast-2.amazonaws.com/cats=058264243522.dkr.ecr.ap-northeast-2.amazonaws.com/cats:${{ steps.image-info.outputs.image_tag }} \
-            058264243522.dkr.ecr.ap-northeast-2.amazonaws.com/dogs=058264243522.dkr.ecr.ap-northeast-2.amazonaws.com/dogs:${{ steps.image-info.outputs.image_tag }} \
-            058264243522.dkr.ecr.ap-northeast-2.amazonaws.com/web=058264243522.dkr.ecr.ap-northeast-2.amazonaws.com/web:${{ steps.image-info.outputs.image_tag }}
+            058264243522.dkr.ecr.ap-northeast-2.amazonaws.com/cats=058264243522.dkr.ecr.ap-northeast-2.amazonaws.com/cats:${{ needs.build.outputs.image_tag }} \
+            058264243522.dkr.ecr.ap-northeast-2.amazonaws.com/dogs=058264243522.dkr.ecr.ap-northeast-2.amazonaws.com/dogs:${{ needs.build.outputs.image_tag }} \
+            058264243522.dkr.ecr.ap-northeast-2.amazonaws.com/web=058264243522.dkr.ecr.ap-northeast-2.amazonaws.com/web:${{ needs.build.outputs.image_tag }}
             cat kustomization.yaml
 
       - name: Commit files
