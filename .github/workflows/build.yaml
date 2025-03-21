@@ -37,6 +37,7 @@ jobs:
           echo "::set-output name=version::$VERSION"
 
       - name: Build, tag, and push image to Amazon ECR
+        id: image-info
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: ${{ matrix.ecr_repository }}  # 매트릭스 사용
@@ -62,11 +63,12 @@ jobs:
 
       - name: Update Kubernetes resources
         run: |
+            echo ${{ steps.image-info.outputs.image_tag }}
             cd k8s-manifest-repo/base/
             kustomize edit set image \
-            058264243522.dkr.ecr.ap-northeast-2.amazonaws.com/cats=058264243522.dkr.ecr.ap-northeast-2.amazonaws.com/cats:${{ steps.image.outputs.image_tag }} \
-            058264243522.dkr.ecr.ap-northeast-2.amazonaws.com/dogs=058264243522.dkr.ecr.ap-northeast-2.amazonaws.com/dogs:${{ steps.image.outputs.image_tag }} \
-            058264243522.dkr.ecr.ap-northeast-2.amazonaws.com/web=058264243522.dkr.ecr.ap-northeast-2.amazonaws.com/web:${{ steps.image.outputs.image_tag }}
+            058264243522.dkr.ecr.ap-northeast-2.amazonaws.com/cats=058264243522.dkr.ecr.ap-northeast-2.amazonaws.com/cats:${{ steps.image-info.outputs.image_tag }} \
+            058264243522.dkr.ecr.ap-northeast-2.amazonaws.com/dogs=058264243522.dkr.ecr.ap-northeast-2.amazonaws.com/dogs:${{ steps.image-info.outputs.image_tag }} \
+            058264243522.dkr.ecr.ap-northeast-2.amazonaws.com/web=058264243522.dkr.ecr.ap-northeast-2.amazonaws.com/web:${{ steps.image-info.outputs.image_tag }}
 
       - name: Commit files
         run: |
