@@ -50,6 +50,10 @@ jobs:
             docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
             docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
 
+update-kustomization:
+    runs-on: ubuntu-latest
+    needs: build  # ← 모든 빌드가 끝난 후 실행
+    steps:
       - name: Setup Kustomize
         uses: imranismail/setup-kustomize@v1
 
@@ -69,11 +73,17 @@ jobs:
             058264243522.dkr.ecr.ap-northeast-2.amazonaws.com/cats=058264243522.dkr.ecr.ap-northeast-2.amazonaws.com/cats:${{ steps.image-info.outputs.image_tag }} \
             058264243522.dkr.ecr.ap-northeast-2.amazonaws.com/dogs=058264243522.dkr.ecr.ap-northeast-2.amazonaws.com/dogs:${{ steps.image-info.outputs.image_tag }} \
             058264243522.dkr.ecr.ap-northeast-2.amazonaws.com/web=058264243522.dkr.ecr.ap-northeast-2.amazonaws.com/web:${{ steps.image-info.outputs.image_tag }}
+            cat kustomization.yaml
 
       - name: Commit files
         run: |
             cd k8s-manifest-repo
             git config --global user.email "github-actions@github.com"
             git config --global user.name "github-actions"
-            git commit -am "Update image tag"
-            git push -u origin main
+            git pull --rebase --autostash origin main
+            if [[ -n $(git status --porcelain) ]]; then
+              git commit -am "Update image tag"
+              git push -u origin main
+            else
+              echo "✅ No changes to commit. Skipping commit & push."
+            fi
